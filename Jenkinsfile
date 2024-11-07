@@ -35,7 +35,7 @@ stages {
      post {
   success {
     dir("webapp/target/"){
-      stash name : "main-file" includes : "*.war"
+      stash name : "main-file", includes : "*.war"
     }
   }
 }
