@@ -1,33 +1,60 @@
-pipeline {
-    agent any
-    // options {
-    //     // Timeout counter starts AFTER agent is allocated
-    //     timeout(time: 1, unit: 'SECONDS')
-    // }
-//     agent {
-//   label 'jenkins-slave-1'
-// }
+pipeline{
+agent any
 
-    tools {
-        maven 'mymvn'
+tools {
+  maven 'mymvn'
+}
+  parameters {
+  choice choices: ['dev', 'prod'], name: 'select_enviroment'
+}
+
+stages {
+
+    stage('build') {
+        steps {
+            sh 'mvn clean package -DskipTests=true'
+            }
+     }
+   stage('test') {
+   parallel {
+       stage('test A'){
+         steps{
+           echo 'test A'
+           sh 'mvn test'
+         }
+       }
+     
+       stage('test B'){
+       steps{
+         echo 'test B'
+         sh 'mvn test'
+       }
+     }
+   }
+
+     post {
+  success {
+    dir("webapp/target/"){
+      stash name : "main-file" includes : "*.war"
     }
+  }
+}
 
-    stages {
-        stage('build') {
-            steps {
-                sh 'mvn clean package -DskipTests=true'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Running testing ?'
-            }
-        }
+     
+  }
 
-        stage('Deploy') {
-            steps {
-                echo 'Running testing ?'
-            }
-        }
-    }
+
+  // stage('deploy_Dev'){
+  //   when { expression {params.select_enviroment=='dev'}  beforeAgent true }
+  //   agent {
+  //     lebel 'DevServer'
+  //   }
+  //   steps{
+  //     dir 
+  //   }
+  // }
+
+
+}
+
 }
